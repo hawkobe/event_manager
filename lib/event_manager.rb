@@ -7,11 +7,15 @@ def clean_zipcode(zipcode)
 end
 
 def clean_phone_number(phone_number)
-  # If the phone number is less than 10 digits, assume that it is a bad number
-  # If the phone number is 10 digits, assume that it is good
-  # If the phone number is 11 digits and the first number is 1, trim the 1 and use the remaining 10 digits
-  # If the phone number is 11 digits and the first number is not 1, then it is a bad number
-  # If the phone number is more than 11 digits, assume that it is a bad number
+  formatted_number = phone_number.gsub(/[^0-9]/, "")
+
+  if formatted_number.length == 10
+    formatted_number.insert(0, '(').insert(4, ')').insert(8, '-')
+  elsif formatted_number.length == 11 && formatted_number[0] == "1"
+    formatted_number[1..10].insert(0, '(').insert(4, ')').insert(8, '-')
+  else
+    "Bad phone number"
+  end
 end
 
 def legislators_by_zipcode(zip)
@@ -57,19 +61,8 @@ contents.each do |row|
   id = row[0]
   name = row[:first_name]
   zipcode = clean_zipcode(row[:zipcode])
+  phone_number = clean_phone_number(row[:homephone])
   legislators = legislators_by_zipcode(zipcode)
-
-  phone_number = row[:homephone]
-
-  no_format = phone_number.gsub(/[^0-9]/, "")
-
-  if no_format.length == 10
-    puts "#{i} #{no_format.insert(0, '(').insert(4, ')').insert(8, '-')}"
-    i += 1
-  elsif no_format.length == 11 && no_format[0] == "1"
-    puts "#{i} #{no_format[1..10].insert(0, '(').insert(4, ')').insert(8, '-')}"
-    i += 1
-  end
   # form_letter = erb_template.result(binding)
 
   # save_thank_you_letter(id, form_letter)
