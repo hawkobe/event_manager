@@ -19,6 +19,11 @@ def clean_phone_number(phone_number)
   end
 end
 
+def calculate_most_frequent_time(array)
+  time = Time.strptime(array.max_by{ |value| array.count(value) }.to_s, "%k")
+  time.strftime("%I %p")
+end
+
 def legislators_by_zipcode(zip)
   civic_info = Google::Apis::CivicinfoV2::CivicInfoService.new
   civic_info.key = 'AIzaSyClRzDqDh5MsXwnCWi0kOiiBivP6JsSyBw'
@@ -55,6 +60,7 @@ contents = CSV.open(
 
 template_letter = File.read('form_letter.erb')
 erb_template = ERB.new template_letter
+registration_hours = []
 
 contents.each do |row|
   id = row[0]
@@ -62,15 +68,12 @@ contents.each do |row|
   zipcode = clean_zipcode(row[:zipcode])
   phone_number = clean_phone_number(row[:homephone])
   legislators = legislators_by_zipcode(zipcode)
+  registration_hours << Time.strptime(row[:regdate], "%m/%d/%y %H:%M").hour
 
-  registration_time = row[:regdate]
-
-  registration_hour = Time.strptime(registration_time, "%m/%d/%y %k:%M").hour
-  # put the registration hours into an array that can then be 
-  # reduced to highest count per hour of day
-
-  puts registration_hour
   # form_letter = erb_template.result(binding)
 
   # save_thank_you_letter(id, form_letter)
 end
+
+puts "The hour people most frequently registered was #{calculate_most_frequent_time(registration_hours)}"
+# calculate_most_frequent_time(registration_hours)
