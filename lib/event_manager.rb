@@ -20,8 +20,7 @@ def clean_phone_number(phone_number)
 end
 
 def calculate_most_frequent_time(array)
-  time = Time.strptime(array.max_by{ |value| array.count(value) }.to_s, "%k")
-  time.strftime("%I %p")
+  array.max_by{ |value| array.count(value) }
 end
 
 def legislators_by_zipcode(zip)
@@ -61,6 +60,7 @@ contents = CSV.open(
 template_letter = File.read('form_letter.erb')
 erb_template = ERB.new template_letter
 registration_hours = []
+registration_days = []
 
 contents.each do |row|
   id = row[0]
@@ -68,12 +68,12 @@ contents.each do |row|
   zipcode = clean_zipcode(row[:zipcode])
   phone_number = clean_phone_number(row[:homephone])
   legislators = legislators_by_zipcode(zipcode)
-  registration_hours << Time.strptime(row[:regdate], "%m/%d/%y %H:%M").hour
+  registration_hours << Time.strptime(row[:regdate], "%m/%d/%y %H:%M").strftime("%I %p")
+  registration_days << Time.strptime(row[:regdate], "%m/%d/%y %H:%M").strftime("%A")
+  form_letter = erb_template.result(binding)
 
-  # form_letter = erb_template.result(binding)
-
-  # save_thank_you_letter(id, form_letter)
+  save_thank_you_letter(id, form_letter)
 end
 
 puts "The hour people most frequently registered was #{calculate_most_frequent_time(registration_hours)}"
-# calculate_most_frequent_time(registration_hours)
+puts "The day people most frequently registered was #{calculate_most_frequent_time(registration_days)}"
